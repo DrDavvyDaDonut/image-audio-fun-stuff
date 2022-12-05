@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>replit</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  <input type="file" id="image_input" accept="image/*" onchange="loadFile()">
+
+  <canvas id="canvas"></canvas>
+
+  <button id="run" onclick="produceSound()" disabled="true">Run</button>
+
+  <div>
+    <label for="pretty" >prioritize nice sound: </label>
+    <input type="checkbox" id="pretty" name="pretty" onclick="niceToggle()" checked> 
+  </div>
+
+  <div>
+    <label for="time" > time (in seconds) </label>
+    <input type="number" id="time" name="time" onchange="updateTime()" value="5">
+  </div>
+
+
+  <div id="chordss" style="text-align:center;">
+    <div style="text-align:center;">
+      <label for="chordSelect" > scale: </label>
+      <select name="chordSelect" id="chordSelect" onchange="updateChord()" >
+        <option value="3">--choose a scale--</option>
+        <option value="0">chromatic</option>
+        <option value="1">diatonic</option>
+        <option value="2">pentatonic</option>
+        <option value="3">major</option>
+        <option value="4">minor</option>
+        <option value="5">custom</option>
+      </select>
+    </div>
+  
+    <div id="customChord" style="visibility:hidden;text-align:center;">
+      <div id="upper">
+        
+        <label for="2" > 2 </label>
+        <input type="checkbox" id="2" name="2" onclick="updateCustom()" >
+        
+        <label for="4" > 4 </label>
+        <input type="checkbox" id="4" name="4" onclick="updateCustom()" >
+  
+        <label style="visibility:hidden"> wahh </label> 
+        
+        <label for="7" > 7 </label>
+        <input type="checkbox" id="7" name="7" onclick="updateCustom()" >
+        
+        <label for="9" > 9 </label>
+        <input type="checkbox" id="9" name="9" onclick="updateCustom()" >
+        
+        <label for="11" > 11 </label>
+        <input type="checkbox" id="11" name="11" onclick="updateCustom()" >
+        
+      </div>
+  
+      <div id="lower">
+        
+        <label for="1" > 1 </label>
+        <input type="checkbox" id="1" name="1" onclick="updateCustom()" checked>
+        
+        <label for="3" > 3 </label>
+        <input type="checkbox" id="3" name="3" onclick="updateCustom()" >
+        
+        <label for="5" > 5 </label>
+        <input type="checkbox" id="5" name="5" onclick="updateCustom()" checked>
+        
+        <label for="6" > 6 </label>
+        <input type="checkbox" id="6" name="6" onclick="updateCustom()" >
+        
+        <label for="8" > 8 </label>
+        <input type="checkbox" id="8" name="8" onclick="updateCustom()" checked>
+        
+        <label for="10" > 10 </label>
+        <input type="checkbox" id="10" name="10" onclick="updateCustom()" >
+        
+        <label for="12" > 12 </label>
+        <input type="checkbox" id="12" name="12" onclick="updateCustom()" >
+        
+      </div>
+      
+    </div>
+  
+    <div id="disclaimer" style="display:none">
+      this starts on A, not C, but this makes it easier for me to think about chords
+    </div>
+  </div>
+    
+    
+    
+  <script src="jaba/script simple.js"></script>
+ 
+  <script src="jaba/audio.js"></script>
+  
+  <script src="jaba/options.js"></script>
+  
+  <!--
+
+  
+  This script places a badge on your repl's full-browser view back to your repl's cover
+  page. Try various colors for the theme: dark, light, red, orange, yellow, lime, green,
+  teal, blue, blurple, magenta, pink!
+  <script src="https://replit.com/public/js/replit-badge.js" theme="blue" defer></script> 
+  -->
+</body>
+
+</html>
