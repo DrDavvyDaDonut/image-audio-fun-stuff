@@ -1,3 +1,5 @@
+If on github, click the link under the description to the right to go to most recent version.
+
 Open the index by double clicking on it, and it should open in your browser. 
 
 Nice sound forces the intervals to be in equal temperment, and can give you control over what notes are chosen to be played.
