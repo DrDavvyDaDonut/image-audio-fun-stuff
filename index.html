@@ -19,14 +19,16 @@
     <label for="pretty" >prioritize nice sound: </label>
     <input type="checkbox" id="pretty" name="pretty" onclick="niceToggle()" checked> 
   </div>
+  
+  <button id="invert" name="invert" onclick="invert()" > invert image </button>
 
   <div>
     <label for="time" > time (in seconds) </label>
-    <input type="number" id="time" name="time" onchange="updateTime()" value="5">
+    <input type="number" id="time" name="time" onchange="updateTime()" value="3">
   </div>
 
 
-  <div id="chordss" style="text-align:center;">
+  <div id="chordsDiv" style="text-align:center;">
     <div style="text-align:center;">
       <label for="chordSelect" > scale: </label>
       <select name="chordSelect" id="chordSelect" onchange="updateChord()" >
