@@ -1,93 +1,81 @@
 
-var totalRange = [27.5, 3520]
-var oscType = ["sine","square","triangle"]
+var totalRange = [27.5, 3520]                   //  range of frequencies
+var oscType = ["sine","square","triangle"]      //  wave for red, green, and blue channel
 
-actx = new AudioContext
+actx = new AudioContext                         //  creates a new audio context
 
 out = actx.destination
 
 panning = new StereoPannerNode(actx)
 
 var nice = true
-var pictureWidth = 0
-var pictureHeight = 0
+var gridWidth = 0
+var gridHeight = 0
 var maxGain = 0
 var oscs = [[],[],[]]
 var gains = [[],[],[]]
 
+
+//` runs when button is pushed
 function produceSound() {
 
   panning.connect(out)
 
-  console.log(totals)
-  console.log("grids")
-  console.log(grids)
+  gridWidth = grids[0].length         //  sets grid width to the width of the grid
+  gridHeight = grids[0][0].length     //  sets grid height to the height of the grid
 
-  pictureWidth = grids[0].length
-  pictureHeight = grids[0][0].length
+  maxGain = 1 / (gridHeight * 3)      //  max gain per column per channel, so the speakers don't explode
 
-  console.log("width " + pictureWidth)
-  console.log("height " + pictureHeight)
+  oscs = [[],[],[]]                   //  will carry all the oscillators created for each channel
 
-  maxGain = 1 / (pictureHeight * 3)
-
-  oscs = [[],[],[]]
-
-  
-
-  if (nice){
+  if (nice){                          //  nice setup or not
     niceSetup()
   } else {
     totalSetup()
   }
-
-  
 }
 
+
+//  sets up sound with equal temperament
 function niceSetup(){
   
-  octaves = log(2, totalRange[1]/totalRange[0])
-  maxHeight = octaves * chord.length + 1
+  octaves = log(2, totalRange[1]/totalRange[0])     //  gets the number of octaves
+  maxHeight = octaves * chord.length + 1            //  calculates the total number of avaliable notes with nunmber of octabes and notes in chord per octave
   
-  musicHeight = maxHeight
-  
-  if (pictureHeight < maxHeight){
-    musicHeight = pictureHeight  
+  musicHeight = maxHeight                           //  the number of notes is set to the max
+  if (gridHeight < maxHeight){                      //  if the number of notes is greater than the height of the grid, the number of notes becomes the height
+    musicHeight = gridHeight  
   } 
   
-  interval = 2 ** (1/12)
+  interval = 2 ** (1/12)                            //  sets interval to equal temperament tuning interval
 
-  start = (maxHeight - musicHeight)/2
+  start = (maxHeight - musicHeight)/2               //  centers the notes in the total range of notes
   start = Math.floor(start)
-
-  console.log(maxHeight)
-  console.log(start)
-  console.log(start + musicHeight)
 
   base = totalRange[0]
 
-  oscs.forEach(function(element, index){
-    for (var i = 0; i < musicHeight; i++){
-      
-      element[i] = actx.createOscillator()
-      gains[index][i] = actx.createGain()
-      gains[index][i].gain.value = getPixelVolume(index, 0, i)
+  //  for each channel in oscs, populate with oscillators and gain nodes
+  oscs.forEach(function(channelArray, channelIndex){            
 
+    for (var index = 0; index < musicHeight; index++){                //  number of oscillators equal to the number of notes required
       
-      ii = i + start
-      exponent = ((ii - ii % chord.length) / chord.length * 12 + chord[ii % chord.length])
+      channelArray[index] = actx.createOscillator()                                   //  creates an oscillator
+      channelArray[index].type = oscType[channelIndex]                                //  sets the oscillator type
 
-      // console.log("exponent " + exponent)
-      // console.log("multiple " + interval ** exponent)
-      
-      element[i].frequency.value = base * interval ** exponent
-      
-      // console.log(element[i].frequency.value)
-      
-      element[i].type = oscType[index]
+      gains[channelIndex][index] = actx.createGain()                                  //  creates gain node
+      gains[channelIndex][index].gain.value = getPixelVolume(channelIndex, 0, index)  //  gets the volume of the first pixel
 
-      element[i].connect(gains[index][i])
-      gains[index][i].connect(panning)
+      noteIndex = index + start
+
+      octave = (noteIndex - noteIndex % chord.length) / chord.length                  //  how many octaves up a certain note is
+      chordValue = chord[noteIndex % chord.length]                                    //  how many semitones about the first note of the octave a note is
+
+      note = (octave * 12 + chordValue)                                               //  how many semitones above the base note a note is
+      
+      channelArray[index].frequency.value = base * (interval ** note)                 //  sets the frequency of the corresponding note
+
+      channelArray[index].connect(gains[channelIndex][index])                         //  connects the oscillator to the corresponding gain node
+      gains[channelIndex][index].connect(panning)                                     //  connects the gain node to the panner node
     }
   })
 
@@ -95,25 +83,27 @@ function niceSetup(){
   
 }
 
+
+//  setup the notes with a true separation of the notes. pretty much the same thing but with simpler math
 function totalSetup(){
   
-  oscs.forEach(function(element, index){
-    for (var i = 0; i < pictureHeight; i++){
-      element[i] = actx.createOscillator()
-      element[i].type = oscType[index]
+  quotient = totalRange[1] / totalRange[0]
+  interval = quotient ** (1 / gridHeight)
 
-      gains[index][i] = actx.createGain()
-      gains[index][i].gain.value = getPixelVolume(index, 0, i)
+  oscs.forEach(function(channelArray, channelIndex){
 
-      interval = totalRange[1]/totalRange[0]
-      interval = interval ** (1/pictureHeight)
+    for (var index = 0; index < gridHeight; index++){
+
+      channelArray[index] = actx.createOscillator()
+      channelArray[index].type = oscType[channelIndex]
+
+      gains[channelIndex][index] = actx.createGain()
+      gains[channelIndex][index].gain.value = getPixelVolume(channelIndex, 0, index)
       
-      element[i].frequency.value = totalRange[0] * (interval ** i)
-
-      // console.log(element[i].frequency.value)
+      channelArray[index].frequency.value = totalRange[0] * (interval ** index)
       
-      element[i].connect(gains[index][i])
-      gains[index][i].connect(panning)
+      channelArray[index].connect(gains[channelIndex][index])
+      gains[channelIndex][index].connect(panning)
     }
     
   })
@@ -121,31 +111,28 @@ function totalSetup(){
   gainAndPan()
 }
 
+
+//  sets all the volume changes and pans the image
 function gainAndPan(){
   resolution = oscs[0].length
 
-  multiple = resolution / pictureHeight
+  multiple = resolution / gridHeight
 
   groups = []
-  totalGroups = 0
-  for (var i = 0; i < resolution + 1; i++){
+
+  for (var i = 0; i < resolution + 1; i++){                         //  finds the number of pixels that each note has
     many = i / multiple
     many = Math.floor(many)
     groups[i] = many
-    totalGroups = many
   }
 
-  console.log(groups)
-  console.log(totalGroups)
-
-  time = actx.currentTime
+  time = actx.currentTime                                           //  sets up time for timing
 
   for (var channels = 0; channels < 3; channels++){
-    for (var columns = 0; columns < pictureWidth; columns++){
 
-      poxelTotal = 0
+    for (var columns = 0; columns < gridWidth; columns++){
       
-      for (var poxels = 0; poxels < resolution; poxels++){
+      for (var poxels = 0; poxels < resolution; poxels++){          //  i'm calling a group of pixels a poxel. don't ask me why
         
         pixelStart = groups[poxels]
         pixelEnd = groups[poxels + 1]
@@ -154,35 +141,28 @@ function gainAndPan(){
         for (var pixs = pixelStart; pixs < pixelEnd; pixs++){
           poxelVolume += getPixelVolume(channels, columns, pixs)
         }
+        
+        gains[channels][poxels].gain.setValueAtTime(poxelVolume, time + columns * timeLength / gridWidth)
 
-        poxelTotal += poxelVolume
-
-        gains[channels][poxels].gain.setValueAtTime(poxelVolume, time + columns * timeLength / pictureWidth)
       }
-
-      // console.log("channel " + channels + "\ncolumn  " + columns + "\ntotal volume " + poxelTotal)
-      
     }
   }
 
   panning.pan.setValueAtTime(-1, time)
   
   panning.pan.linearRampToValueAtTime(1, time + timeLength)
-
-  // panningOffset = timeLength/pictureWidth
-  // for (var i = 0; i < pictureWidth; i++){
-  //   panning.pan.setValueAtTime(-1 + 2/pictureWidth * i, time + panningOffset*i)
-  // }
   
-  oscs.forEach((element) => {
-    element.forEach((e) => {
-      e.start(time)
-      e.stop(time + timeLength)
+  oscs.forEach((channel) => {
+    channel.forEach((osc) => {
+      osc.start(time)
+      osc.stop(time + timeLength)
     })
   })
   
 }
 
+
+//  gets volume based on value and alpha 
 function getPixelVolume(channel, column, row){
   pixelVolume = maxGain * grids[channel][column][row] * grids[3][column][row]
   pixelVolume /= 65025
@@ -190,6 +170,7 @@ function getPixelVolume(channel, column, row){
 }
 
 
+//  log base x of y
 function log(x,y){
   return Math.log(y) / Math.log(x)
 }
